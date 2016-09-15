@@ -1,0 +1,60 @@
+{
+  "name": "sinclair/payment-engine",
+  "description": "API driven tool to process payments and charges",
+  "type": "library",
+  "require": {
+    "php": ">=5.4.0",
+    "sinclair/api-foundation": "^1.0.1",
+    "wtbi/schedulable": "^1.0.0",
+    "symfony/event-dispatcher": "^2.8",
+    "omnipay/worldpay": "^2.2",
+    "omnipay/stripe": "^2.4",
+    "omnipay/paypal": "^2.6",
+    "omnipay/2checkout": "^2.1",
+    "omnipay/sagepay": "^2.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.0",
+    "phpspec/phpspec": "~2.1",
+    "laracasts/testdummy": "~2.0",
+    "laravel/laravel": "dev-develop"
+  },
+  "autoload": {
+    "psr-0": {
+      "Sinclair\\PaymentEngine": "src/"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Tom Sinclair",
+      "email": "tom.sinclair31@gmail.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "scripts": {
+    "phpunit": "./vendor/bin/phpunit;"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "http://satis.wtbidev.co.uk"
+    }
+  ],
+  "config": {
+    "preferred-install": "dist",
+    "secure-http": false
+  },
+  "extra": {
+    "gateways": [
+      "WorldPay",
+      "Stripe",
+      "SagePay_Direct",
+      "SagePay_Server",
+      "PayPal_Express",
+      "PayPal_Pro",
+      "PayPal_Rest",
+      "TwoCheckout"
+    ]
+  }
+}
