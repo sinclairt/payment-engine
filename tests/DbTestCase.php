@@ -20,7 +20,7 @@ abstract class DbTestCase extends \Illuminate\Foundation\Testing\TestCase
     {
         parent::__construct();
 
-        $this->baseUrl = env('APP_URL');
+        $this->baseUrl = 'http://payment-engine.local';
     }
 
     /**
@@ -32,11 +32,9 @@ abstract class DbTestCase extends \Illuminate\Foundation\Testing\TestCase
      */
     public function createApplication()
     {
-        copy(__DIR__ . '/../src/config/multi-tenancy.php', __DIR__ . '/../vendor/laravel/laravel/config/multi-tenancy.php');
-
         $app = require __DIR__ . '/../vendor/laravel/laravel/bootstrap/app.php';
 
-//        $app->register(\Sinclair\MultiTenancy\Providers\MultiTenancyServiceProvider::class);
+        $app->register(\Sinclair\PaymentEngine\PaymentEngineServiceProvider::class);
 
         $app->make('Illuminate\Contracts\Console\Kernel')
             ->bootstrap();
@@ -53,7 +51,10 @@ abstract class DbTestCase extends \Illuminate\Foundation\Testing\TestCase
     {
         parent::setUp();
 
-        $this->migrate();
+        $this->app[ 'config' ]->set('database.default', 'sqlite');
+        $this->app[ 'config' ]->set('database.connections.sqlite.database', ':memory:');
+
+//        $this->migrate();
     }
 
     /**

@@ -3,8 +3,10 @@
 namespace Sinclair\PaymentEngine;
 
 use Illuminate\Support\ServiceProvider;
+use Sinclair\ApiFoundation\Providers\ApiFoundationServiceProvider;
 use Sinclair\PaymentEngine\Commands\GenerateTransaction;
 use Sinclair\PaymentEngine\Commands\ProcessTransaction;
+use Wtbi\Schedulable\Providers\SchedulableServiceProvider;
 
 class PaymentEngineServiceProvider extends ServiceProvider
 {
@@ -21,14 +23,14 @@ class PaymentEngineServiceProvider extends ServiceProvider
         foreach ( $this->resources as $resource )
             $this->app[ 'router' ]->bind($resource, function ( $value ) use ( $resource )
             {
-                return $this->app(studly_case($resource))
+                return app(studly_case($resource))
                             ->withTrashed()
                             ->find($value);
             });
 
         $this->app[ 'router' ]->bind('transaction_item', function ( $value )
         {
-            return $this->app('Item')
+            return app('Item')
                         ->withTrashed()
                         ->find($value);
         });
@@ -53,6 +55,9 @@ class PaymentEngineServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->register(ApiFoundationServiceProvider::class);
+        $this->app->register(SchedulableServiceProvider::class);
+
         foreach ( $this->resources as $resource )
         {
             $this->app->bind('Sinclair\PaymentEngine\Contracts\\' . studly_case($resource), 'Sinclair\PaymentEngine\Models\\' . studly_case($resource));

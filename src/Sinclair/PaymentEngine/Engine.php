@@ -44,7 +44,7 @@ class Engine implements EngineInterface
     /**
      * @var GatewayInterface
      */
-    private $gateway;
+    private $gateway = null;
 
     /**
      * @var PlanRepository
@@ -60,6 +60,11 @@ class Engine implements EngineInterface
      * @var array
      */
     public $results = [];
+
+    /**
+     * @var Factory
+     */
+    private $factory;
 
     /**
      * @return array
@@ -102,7 +107,15 @@ class Engine implements EngineInterface
 
         $this->transactionRepository = $transactionRepository;
 
-        $this->gateway = $factory->create();
+        $this->factory = $factory;
+    }
+
+    public function setGateway()
+    {
+        if ( is_null($this->gateway) )
+            $this->gateway = $this->factory->create();
+
+        return $this;
     }
 
     /**
@@ -334,6 +347,8 @@ class Engine implements EngineInterface
     {
         $purchaseData = $this->purchaseData($card);
 
+        $this->setGateway();
+
         if ( method_exists($this->gateway, 'authorize') )
             return $this->gateway->authorize($purchaseData)
                                  ->send();
@@ -349,6 +364,8 @@ class Engine implements EngineInterface
      */
     protected function responseIsSuccess( ResponseInterface $response )
     {
+        $this->setGateway();
+
         // this is intended to be a lights out operation so we will fire an event here to let the developer handle this how they want
         if ( $response->isRedirect() )
             event(new TransactionWasRedirected($this->transaction, $this->gateway, $response));

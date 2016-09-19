@@ -45,7 +45,9 @@ class Item extends Model implements \Sinclair\PaymentEngine\Contracts\Item
     /**
      * @var array
      */
-    public $filters = [];
+    public $filters = [
+        'transaction'
+    ];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -53,5 +55,19 @@ class Item extends Model implements \Sinclair\PaymentEngine\Contracts\Item
     public function transaction()
     {
         return $this->belongsTo(Transaction::class);
+    }
+
+    /**
+     * @param $query
+     * @param $value
+     * @param bool $trashed
+     *
+     * @return mixed
+     */
+    public function scopeFilterTransaction( $query, $value, $trashed = false )
+    {
+        $query = $trashed ? $query->withTrashed() : $query;
+
+        return is_array($value) ? $query->whereIn('transaction_id', $value) : $query->where('transaction_id', $value);
     }
 }

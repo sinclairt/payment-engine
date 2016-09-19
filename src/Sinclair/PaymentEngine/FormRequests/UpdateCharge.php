@@ -23,6 +23,23 @@ class UpdateCharge extends FormRequest
         return true;
     }
 
+    protected function getValidatorInstance()
+    {
+        $validator = parent::getValidatorInstance();
+
+        $validator->sometimes('starts_at', 'before:expires_at', function ( $input )
+        {
+            return !is_null($input->expires_at);
+        });
+
+        $validator->sometimes('expires_at', 'after:starts_at', function ( $input )
+        {
+            return !is_null($input->starts_at);
+        });
+
+        return $validator;
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

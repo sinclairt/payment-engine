@@ -11,7 +11,7 @@ use Wtbi\Schedulable\Traits\IsSchedulable;
  * Class Charge
  * @package Sinclair\PaymentEngine\Models
  */
-class Charge extends Model implements \Sinclair\PaymentEngine\Contracts\Charge
+class Charge extends Model implements \Sinclair\PaymentEngine\Contracts\Charge, \Wtbi\Schedulable\Contracts\IsSchedulable
 {
     use IsSchedulable, SoftDeletes;
 

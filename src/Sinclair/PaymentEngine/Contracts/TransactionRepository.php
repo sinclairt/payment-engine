@@ -13,5 +13,5 @@ interface TransactionRepository extends Repository
     /**
      * @return mixed
      */
-    public function getFailed();;
+    public function getFailed();
 }

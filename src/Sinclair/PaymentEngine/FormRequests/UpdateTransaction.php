@@ -32,7 +32,7 @@ class UpdateTransaction extends FormRequest
             'card_number'      => 'sometimes|size:16',
             'card_starts_at'   => 'sometimes|date|before:card_expires_at|before:today',
             'card_expires_at'  => 'sometimes|date|after:card_starts_at|after:today',
-            'card_cvv'         => 'sometimes|size:3|numeric',
+            'card_cvv'         => 'sometimes|min:100|max:999|numeric',
             'gateway_response' => 'sometimes|nullable|json',
             'is_success'       => 'sometimes|boolean',
             'is_failure'       => 'sometimes|boolean',

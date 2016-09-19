@@ -11,7 +11,7 @@ use Wtbi\Schedulable\Traits\IsSchedulable;
  * Class Plan
  * @package Sinclair\PaymentEngine\Models
  */
-class Plan extends Model implements \Sinclair\PaymentEngine\Contracts\Plan
+class Plan extends Model implements \Sinclair\PaymentEngine\Contracts\Plan, \Wtbi\Schedulable\Contracts\IsSchedulable
 {
     use IsSchedulable, SoftDeletes;
 
@@ -161,7 +161,7 @@ class Plan extends Model implements \Sinclair\PaymentEngine\Contracts\Plan
 
         foreach ( $value as $item )
             if ( method_exists($this, 'scopeIs' . studly_case($item)) )
-                $query = $query->{'scopeIs' . studly_case($item)}();
+                $query = $query->{'is' . studly_case($item)}();
 
         return $query;
     }

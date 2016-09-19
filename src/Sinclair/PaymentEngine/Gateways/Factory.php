@@ -27,21 +27,6 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
     protected $settings = [];
 
     /**
-     * @var Omnipay
-     */
-    protected $omnipay;
-
-    /**
-     * Factory constructor.
-     *
-     * @param Omnipay $omnipay
-     */
-    public function __construct( Omnipay $omnipay )
-    {
-        $this->omnipay = $omnipay;
-    }
-
-    /**
      * @return GatewayInterface
      */
     public function create()
@@ -123,7 +108,7 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
      */
     protected function setGateway()
     {
-        $this->gateway = $this->omnipay->create($this->getGateWayName());
+        $this->gateway = Omnipay::create($this->getGateWayName());
 
         return $this;
     }
