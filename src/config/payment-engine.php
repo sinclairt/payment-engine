@@ -14,5 +14,7 @@
 
 return [
     'gateway'  => 'WorldPay',
-    'settings' => [],
+    'settings' => [
+        'returnUrl' => 'http://example.com'
+    ],
 ];

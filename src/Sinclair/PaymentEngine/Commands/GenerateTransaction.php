@@ -13,7 +13,7 @@ class GenerateTransaction extends Command
      *
      * @var string
      */
-    protected $signature = 'transaction:generate {plan} {--process=true}';
+    protected $signature = 'transaction:generate {plan} {--calculate=true} {--process=true}';
 
     /**
      * The console command description.
@@ -57,7 +57,7 @@ class GenerateTransaction extends Command
 
         $plan = $this->planRepository->getById($plan_id);
 
-        $this->engine->handleTransaction($plan, true == $this->option('process'));
+        $this->engine->handleTransaction($plan, true == $this->option('calculate'), true == $this->option('process'));
 
         $result = $this->engine->getResult($plan_id);
 

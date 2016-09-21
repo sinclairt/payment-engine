@@ -14,4 +14,16 @@ interface Factory
      * @return GatewayInterface
      */
     public function create();
+
+    /**
+     * @return array
+     */
+    public function getOptions();
+
+    /**
+     * @param array $options
+     *
+     * @return $this
+     */
+    public function setOptions( array $options );
 }

@@ -34,7 +34,7 @@ class Transaction extends Model implements \Sinclair\PaymentEngine\Contracts\Tra
         'card_cvv',
         'card_type',
         'card_issue_number',
-        'currency'
+        'currency',
     ];
 
     /**
@@ -96,7 +96,13 @@ class Transaction extends Model implements \Sinclair\PaymentEngine\Contracts\Tra
      */
     public function total()
     {
-        return $this->items->sum('amount');
+        return array_sum($this->items->pluck('amount')
+                                     ->toArray());
+    }
+
+    public function process()
+    {
+        return app('PaymentEngine')->processTransaction($this);
     }
 
     /**

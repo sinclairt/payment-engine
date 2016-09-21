@@ -89,6 +89,11 @@ class Plan extends Model implements \Sinclair\PaymentEngine\Contracts\Plan, \Wtb
         return $this->morphTo();
     }
 
+    public function generateTransaction( $calculate = true, $process = true )
+    {
+        return app('PaymentEngine')->handleTransaction($this, $calculate, $process);
+    }
+
     /**
      * @param Builder $query
      * @param $value

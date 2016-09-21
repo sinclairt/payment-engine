@@ -31,7 +31,7 @@ class TransactionFailedToProcess implements ShouldBroadcast
      * @param Transaction $transaction
      * @param string $message
      */
-    public function __construct( Transaction $transaction, string $message = '' )
+    public function __construct( Transaction $transaction, string $message = null )
     {
         $this->transaction = $transaction;
         $this->message = $message;

@@ -15,11 +15,6 @@ abstract class ApiTest extends DbTestCase
     protected $baseUri;
 
     /**
-     * @var \Faker\Generator
-     */
-    protected $faker;
-
-    /**
      * @var
      */
     public $model;
@@ -39,8 +34,6 @@ abstract class ApiTest extends DbTestCase
         $this->migrate(__DIR__ . '/migrations');
 
         $this->migrate(__DIR__ . '/../vendor/laravel/laravel/database/migrations');
-
-        $this->faker = Faker\Factory::create();
 
         $this->artisan('vendor:publish');
 
@@ -133,9 +126,7 @@ abstract class ApiTest extends DbTestCase
     {
         $model = collect($this->createDummies(1))->first();
 
-        $data = $this->updateData();
-
-        $response = $this->json('PATCH', $this->baseUri . '/' . $model->id, $data)->response;
+        $response = $this->json('PATCH', $this->baseUri . '/' . $model->id, $this->updateData())->response;
 
         $this->compareItem($response, $model->fresh());
     }
@@ -228,6 +219,9 @@ abstract class ApiTest extends DbTestCase
     protected function compareItem( $response, $model )
     {
         $content = json_decode($response->getContent());
+
+        if(!is_object($content))
+            dd($response);
 
         $this->assertObjectHasAttribute('data', $content);
 

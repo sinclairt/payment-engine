@@ -3,7 +3,7 @@
 namespace Sinclair\PaymentEngine\FormRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Sinclair\PaymentEngine\Traits\CanBeScheduled;
+use Sinclair\PaymentEngine\Traits\ScheduleValidation;
 
 /**
  * Class UpdatePlan
@@ -11,7 +11,7 @@ use Sinclair\PaymentEngine\Traits\CanBeScheduled;
  */
 class UpdatePlan extends FormRequest
 {
-    use CanBeScheduled;
+    use ScheduleValidation;
 
     /**
      * Determine if the user is authorized to make this request.

@@ -11,6 +11,17 @@ use Omnipay\Omnipay;
  */
 class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
 {
+    private $supportedGateways = [
+        "WorldPay",
+        "Stripe",
+        "SagePay_Direct",
+        "SagePay_Server",
+        "PayPal_Express",
+        "PayPal_Pro",
+        "PayPal_Rest",
+        "TwoCheckout"
+    ];
+
     /**
      * @var GatewayInterface
      */
@@ -27,6 +38,11 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
     protected $settings = [];
 
     /**
+     * @var array
+     */
+    protected $options = [];
+
+    /**
      * @return GatewayInterface
      */
     public function create()
@@ -34,6 +50,26 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
         return $this->setGateway()
                     ->applySettings()
                     ->getGateway();
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return $this
+     */
+    public function setOptions( array $options )
+    {
+        $this->options = $options;
+
+        return $this;
     }
 
     /**
@@ -66,10 +102,7 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
         if ( is_callable($this->settings) )
             $this->settings = call_user_func($this->settings);
 
-        if ( $this->settingsAreValid() )
-            return $this->settings;
-
-        throw new \Exception('You have supplied settings that cannot be used with this gateway: ' . $this->gatewayName);
+        return $this->settings;
     }
 
     /**
@@ -78,7 +111,13 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
     {
         foreach ( $this->getSettings() as $setting => $value )
             if ( method_exists($this->gateway, 'set' . studly_case($setting)) )
+            {
                 $this->gateway->{'set' . studly_case($setting)}($value);
+            }
+            else
+            {
+                $this->options[ $setting ] = $value;
+            }
 
         return $this;
     }
@@ -90,7 +129,7 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
      */
     protected function gatewaySupported( $gateway )
     {
-        return in_array($gateway, Omnipay::getSupportedGateways());
+        return in_array($gateway, $this->supportedGateways);
     }
 
     /**
@@ -119,13 +158,5 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
     protected function getGateway()
     {
         return $this->gateway;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function settingsAreValid():bool
-    {
-        return array_diff($this->settings, $this->getDefaultSettings()) == 0;
     }
 }

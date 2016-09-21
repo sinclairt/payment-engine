@@ -30,7 +30,7 @@ class TransactionFailedToGenerate implements ShouldBroadcast
      * @param Plan $plan
      * @param string $message
      */
-    public function __construct( Plan $plan, $message = '' )
+    public function __construct( Plan $plan, $message = null )
     {
         $this->plan = $plan;
         $this->message = $message;

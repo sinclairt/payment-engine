@@ -17,16 +17,21 @@ interface Engine
     public function getItems();
 
     /**
-     * @return Model|Plan
-     */
-    public function getPlan();
-
-    /**
      * @param Model|Plan $plan
      *
      * @return \Sinclair\PaymentEngine\Engine
      */
     public function setPlan( $plan );
+
+    /**
+     * @return Model|Transaction
+     */
+    public function getTransaction();
+
+    /**
+     * @return \Sinclair\PaymentEngine\Engine
+     */
+    public function initGateway();
 
     /**
      * @return \Sinclair\PaymentEngine\Engine
@@ -41,12 +46,13 @@ interface Engine
     public function processPlans( $plans );
 
     /**
-     * @param $plan
+     * @param Plan $plan
+     * @param bool $calculate
      * @param bool $process
      *
-     * @return \Sinclair\PaymentEngine\Engine
+     * @return Engine
      */
-    public function handleTransaction( Plan $plan, $process = true );
+    public function handleTransaction( Plan $plan, $calculate = true, $process = true );
 
     /**
      * Get all charges for a plan and convert to a transaction item

@@ -14,7 +14,7 @@ trait CanBeScheduled
      */
     protected function schedule( $attributes, $model )
     {
-        if ( sizeof(array_intersect_key($attributes, [ 'minute', 'hour', 'day_of_week', 'day_of_month', 'month_of_year', 'year', 'starts_at', 'expires_at', 'frequency' ])) > 0 )
+        if ( sizeof($this->getScheduleKeysFromAttributes($attributes)) > 0 )
             schedule($model)
                 ->minute(array_get($attributes, 'minute'))
                 ->hour(array_get($attributes, 'hour'))
@@ -31,26 +31,18 @@ trait CanBeScheduled
     /**
      * @return array
      */
-    protected function scheduleCreationRules()
+    protected function scheduleKeys()
     {
-        return [
-            'minute'        => 'required_if:frequency,hourly,weekly,monthly,annually,yearly,adhoc',
-            'hour'          => 'required_if:frequency,weekly,monthly,annually,yearly,adhoc',
-            'day_of_week'   => 'required_if:frequency,weekly',
-            'day_of_month'  => 'required_if:frequency,monthly,yearly,annually,adhoc',
-            'month_of_year' => 'required_if:frequency,yearly,annually,adhoc',
-            'year'          => 'required_if:frequency,adhoc',
-            'frequency'     => 'required|in:minutely,hourly,weekly,monthly,annually,yearly,adhoc',
-            'starts_at'     => 'sometimes|nullable|date',
-            'expires_at'    => 'sometimes|nullable|date'
-        ];
+        return [ 'minute', 'hour', 'day_of_week', 'day_of_month', 'month_of_year', 'year', 'starts_at', 'expires_at', 'frequency' ];
     }
 
     /**
+     * @param $attributes
+     *
      * @return array
      */
-    protected function scheduleUpdateRules()
+    protected function getScheduleKeysFromAttributes( $attributes )
     {
-        return array_replace($this->scheduleCreationRules(), [ 'frequency' => 'sometimes|in:minutely,hourly,daily,weekly,monthly,annually,yearly,adhoc' ]);
+        return array_intersect(array_keys($attributes), $this->scheduleKeys());
     }
 }

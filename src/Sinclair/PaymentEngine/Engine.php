@@ -75,14 +75,6 @@ class Engine implements EngineInterface
     }
 
     /**
-     * @return Model|Plan
-     */
-    public function getPlan()
-    {
-        return $this->plan;
-    }
-
-    /**
      * @param Model|Plan $plan
      *
      * @return Engine
@@ -92,6 +84,14 @@ class Engine implements EngineInterface
         $this->plan = $plan;
 
         return $this;
+    }
+
+    /**
+     * @return Model|Transaction
+     */
+    public function getTransaction()
+    {
+        return $this->transaction;
     }
 
     /**
@@ -110,7 +110,10 @@ class Engine implements EngineInterface
         $this->factory = $factory;
     }
 
-    public function setGateway()
+    /**
+     * @return \Sinclair\PaymentEngine\Engine
+     */
+    public function initGateway()
     {
         if ( is_null($this->gateway) )
             $this->gateway = $this->factory->create();
@@ -137,7 +140,7 @@ class Engine implements EngineInterface
     public function processPlans( $plans )
     {
         if ( !is_array($plans) && !$plans instanceof \Illuminate\Support\Collection )
-            throw new \InvalidArgumentException(self::class . ' ');
+            throw new \InvalidArgumentException(self::class . ' $plans must be an array or a Collection');
 
         if ( is_array($plans) )
             $plans = collect($plans);
@@ -148,14 +151,15 @@ class Engine implements EngineInterface
     }
 
     /**
-     * @param $plan
+     * @param Plan $plan
+     * @param bool $calculate
      * @param bool $process
      *
      * @return Engine
      */
-    public function handleTransaction( Plan $plan, $process = true )
+    public function handleTransaction( Plan $plan, $calculate = true, $process = true )
     {
-        return $this->generateTransaction()
+        return $this->generateTransaction($plan, $calculate)
                     ->shouldProcess($process);
     }
 
@@ -173,13 +177,15 @@ class Engine implements EngineInterface
 
         $this->items = [];
 
-        foreach ( $plan->charges as $charge )
-            foreach ( $charge->runDatesBetween($plan->schedule->last_ran_at) as $date )
-                $this->items[] = [
-                    'amount'      => $charge->amount,
-                    'description' => $charge->description,
-                    'charged_at'  => $date
-                ];
+        if ( !is_null($this->plan->schedule->last_ran_at) )
+            foreach ( $this->plan->charges as $charge )
+                foreach ( $charge->runDatesBetween($this->plan->schedule->last_ran_at) as $schedule )
+                    foreach ( $schedule->events as $date )
+                        $this->items[] = [
+                            'amount'      => $charge->amount,
+                            'description' => $charge->description,
+                            'charged_at'  => $date
+                        ];
 
         return $this;
     }
@@ -210,7 +216,10 @@ class Engine implements EngineInterface
                 'card_number'     => $this->plan->card_number,
                 'card_starts_at'  => $this->plan->card_starts_at,
                 'card_expires_at' => $this->plan->card_expires_at,
-                'items'           => $this->items
+                'items'           => $this->items,
+                'plan_id'         => $this->plan->id,
+                'is_success'      => 0,
+                'is_failure'      => 0
             ]);
 
             $this->results[ 'plans' ][ $this->plan->id ] = $this->results[ 'transactions' ][ $this->transaction->id ] = [ 'status' => true, 'message' => '' ];
@@ -221,7 +230,9 @@ class Engine implements EngineInterface
         }
         catch ( \Exception $e )
         {
-            $this->results[ 'plans' ][ $this->plan->id ] = $this->results[ 'transactions' ][ $this->transaction->id ] = [ 'status' => false, 'message' => $e->getMessage() ];
+            $this->results[ 'plans' ][ $this->plan->id ] = [ 'status' => false, 'message' => $e->getMessage() ];
+            if ( !is_null($this->transaction) )
+                $this->results[ 'transactions' ][ $this->transaction->id ] = $this->results[ 'plans' ][ $this->plan->id ];
 
             event(new TransactionFailedToGenerate($this->plan, $e->getMessage()));
 
@@ -238,6 +249,9 @@ class Engine implements EngineInterface
     {
         if ( !is_null($transaction) )
             $this->transaction = $transaction;
+
+        if ( is_null($this->plan) )
+            $this->plan = $this->transaction->plan;
 
         $card = $this->createCreditCard();
 
@@ -260,7 +274,7 @@ class Engine implements EngineInterface
      */
     public function getResult( $id, $key = 'plans' )
     {
-        return $this->results[ $key ][ $id ];
+        return array_get($this->results, $key . '.' . $id);
     }
 
     /**
@@ -332,7 +346,7 @@ class Engine implements EngineInterface
     {
         return [
             'card'        => $card,
-            'amount'      => $this->transaction->total(),
+            'amount'      => (float) $this->transaction->total(),
             'currency'    => $this->transaction->currency,
             'description' => $this->transaction->reference
         ];
@@ -347,13 +361,15 @@ class Engine implements EngineInterface
     {
         $purchaseData = $this->purchaseData($card);
 
-        $this->setGateway();
+        $this->initGateway();
+
+        $options = array_replace($this->factory->getOptions(), $purchaseData);
 
         if ( method_exists($this->gateway, 'authorize') )
-            return $this->gateway->authorize($purchaseData)
+            return $this->gateway->authorize($options)
                                  ->send();
 
-        return $this->gateway->purchase($purchaseData)
+        return $this->gateway->purchase($options)
                              ->send();
     }
 
@@ -364,7 +380,7 @@ class Engine implements EngineInterface
      */
     protected function responseIsSuccess( ResponseInterface $response )
     {
-        $this->setGateway();
+        $this->initGateway();
 
         // this is intended to be a lights out operation so we will fire an event here to let the developer handle this how they want
         if ( $response->isRedirect() )
@@ -389,9 +405,9 @@ class Engine implements EngineInterface
 
         $is_failure = !$is_success;
 
-        $response = json_encode($response);
+        $gateway_response = json_encode($response);
 
-        $this->transactionRepository->update(compact('response', 'is_success', 'is_failure'), $this->transaction);
+        $this->transactionRepository->update(compact('gateway_response', 'is_success', 'is_failure'), $this->transaction);
 
         return $this;
     }

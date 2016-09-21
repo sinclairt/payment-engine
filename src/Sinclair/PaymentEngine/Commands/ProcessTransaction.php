@@ -55,11 +55,8 @@ class ProcessTransaction extends Command
      */
     public function handle()
     {
-        $transactions = $this->hasArgument('transaction') ? $this->singleTransaction() : $this->failedTransactions();
-
-        foreach ( $transactions as $transaction )
+        foreach ( $this->getTransactions() as $transaction )
             $this->processTransaction($transaction);
-
     }
 
     /**
@@ -81,7 +78,7 @@ class ProcessTransaction extends Command
      */
     protected function singleTransaction()
     {
-        return collect($this->transactionRepository->getById($this->argument('transaction')));
+        return collect([ $this->transactionRepository->getById($this->argument('transaction')) ]);
     }
 
     /**
@@ -90,5 +87,13 @@ class ProcessTransaction extends Command
     protected function failedTransactions()
     {
         return $this->transactionRepository->getFailed();
+    }
+
+    /**
+     * @return Collection
+     */
+    protected function getTransactions()
+    {
+        return !is_null($this->argument('transaction')) ? $this->singleTransaction() : $this->failedTransactions();
     }
 }

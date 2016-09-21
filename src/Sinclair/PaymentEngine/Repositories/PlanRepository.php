@@ -40,11 +40,7 @@ class PlanRepository extends Repository implements PlanRepositoryInterface
      */
     public function getAllScheduled( $columns = [ '*' ], $orderBy = null, $direction = 'asc' )
     {
-        $query = $this->model->isDue()
-                             ->with([ 'charges' => function ( $query )
-                             {
-                                 $query->between($this->model->schedule->last_ran_at);
-                             } ]);
+        $query = $this->model->isNow();
 
         if ( !is_null($orderBy) )
             $query = $query->orderBy($orderBy, $direction);

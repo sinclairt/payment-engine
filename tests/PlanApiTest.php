@@ -104,6 +104,7 @@ class PlanApiTest extends ApiTest
 
         $response = $this->json('POST', $this->baseUri . '/filter', [
             'frequency' => 'monthly',
+            'rows'      => 20
         ])->response;
 
         $content = json_decode($response->content());
@@ -113,8 +114,10 @@ class PlanApiTest extends ApiTest
         $plans = Plan::isMonthly()
                      ->get();
 
-        foreach ( $plans as $plan )
-            $this->checkAttributes($plan, $content);
+        $this->assertEquals(sizeof($plans), sizeof($content->data));
+
+        foreach ( $plans as $key => $plan )
+            $this->checkAttributes($plan, $content, $key);
 
         $this->assertEquals($plans->count(), sizeof($content->data));
     }
@@ -260,28 +263,6 @@ class PlanApiTest extends ApiTest
             'card_issue_number' => 1,
             'currency'          => 'GBP',
             'last_failed_at'    => null,
-        ];
-
-        return array_replace($data, $attributes);
-    }
-
-    private function randomSchedule( $attributes = [] )
-    {
-        $data = [
-            'minute'       => $this->faker->numberBetween(0, 59),
-            'hour'         => $this->faker->numberBetween(0, 23),
-            'day_of_week'  => $this->faker->numberBetween(0, 6),
-            'day_of_month' => $this->faker->numberBetween(0, 28),
-            'month'        => $this->faker->numberBetween(1, 12),
-            'year'         => $this->faker->numberBetween(date('Y'), date('Y') + 3),
-            'frequency'    => $this->faker->randomElement([ 'minutely', 'hourly', 'daily', 'weekly', 'monthly', 'annually', 'adhoc' ]),
-            'starts_at'    => $this->faker->boolean ? \Carbon\Carbon::now()
-                                                                    ->addWeeks($this->faker->numberBetween(0, 6))
-                                                                    ->toDateTimeString() : null,
-            'expires_at'   => $this->faker->boolean ? \Carbon\Carbon::now()
-                                                                    ->addMonths($this->faker->numberBetween(2, 24))
-                                                                    ->toDateTimeString() : null,
-
         ];
 
         return array_replace($data, $attributes);
