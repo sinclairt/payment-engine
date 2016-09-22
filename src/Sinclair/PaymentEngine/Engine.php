@@ -169,25 +169,35 @@ class Engine implements EngineInterface
      * @param Plan $plan
      *
      * @return Engine
+     * @throws \Exception
      */
     public function calculateCharges( Plan $plan = null )
     {
-        if ( !is_null($plan) )
-            $this->plan = $plan;
+        try
+        {
+            if ( !is_null($plan) )
+                $this->plan = $plan;
 
-        $this->items = [];
+            $this->items = [];
 
-        if ( !is_null($this->plan->schedule->last_ran_at) )
-            foreach ( $this->plan->charges as $charge )
-                foreach ( $charge->runDatesBetween($this->plan->schedule->last_ran_at) as $schedule )
-                    foreach ( $schedule->events as $date )
-                        $this->items[] = [
-                            'amount'      => $charge->amount,
-                            'description' => $charge->description,
-                            'charged_at'  => $date
-                        ];
-
-        return $this;
+            if ( !is_null($this->plan->schedule->last_ran_at) )
+                foreach ( $this->plan->charges as $charge )
+                    foreach ( $charge->runDatesBetween($this->plan->schedule->last_ran_at) as $schedule )
+                        foreach ( $schedule->events as $date )
+                            $this->items[] = [
+                                'amount'      => $charge->amount,
+                                'description' => $charge->description,
+                                'charged_at'  => $date
+                            ];
+        }
+        catch ( \Exception $e )
+        {
+            throw $e;
+        }
+        finally
+        {
+            return $this;
+        }
     }
 
     /**
@@ -202,14 +212,14 @@ class Engine implements EngineInterface
      */
     public function generateTransaction( Plan $plan = null, $calculate = true )
     {
-        if ( !is_null($plan) )
-            $this->plan = $plan;
-
-        if ( $calculate )
-            $this->calculateCharges();
-
         try
         {
+            if ( !is_null($plan) )
+                $this->plan = $plan;
+
+            if ( $calculate )
+                $this->calculateCharges();
+
             $this->transaction = $this->transactionRepository->add([
                 'account_number'  => $this->plan->account_number,
                 'sort_code'       => $this->plan->sort_code,
@@ -244,26 +254,36 @@ class Engine implements EngineInterface
      * @param Transaction|Model $transaction
      *
      * @return bool
+     * @throws \Exception
      */
     public function processTransaction( Transaction $transaction = null )
     {
-        if ( !is_null($transaction) )
-            $this->transaction = $transaction;
+        try
+        {
+            if ( !is_null($transaction) )
+                $this->transaction = $transaction;
 
-        if ( is_null($this->plan) )
-            $this->plan = $this->transaction->plan;
+            if ( is_null($this->plan) )
+                $this->plan = $this->transaction->plan;
 
-        $card = $this->createCreditCard();
+            $card = $this->createCreditCard();
 
-        if ( $this->cardIsValid($card) )
-            return false;
+            if ( $this->cardIsValid($card) )
+                return false;
 
-        $response = $this->sendRequest($card);
+            $response = $this->sendRequest($card);
 
-        $result = $this->saveResponse($response)
-                       ->responseIsSuccess($response);
+            $result = $this->saveResponse($response)
+                           ->responseIsSuccess($response);
 
-        $this->results[ 'transactions' ][ $this->transaction->id ] = $this->results[ 'plans' ][ $this->plan->id ] = [ 'status' => $result, 'message' => $response->getMessage() ];
+            $this->results[ 'transactions' ][ $this->transaction->id ] = $this->results[ 'plans' ][ $this->plan->id ] = [ 'status' => $result, 'message' => $response->getMessage() ];
+        }
+        catch ( \Exception $e )
+        {
+            event(new TransactionFailedToProcess($this->transaction, $e->getMessage()));
+
+            throw( $e );
+        }
     }
 
     /**

@@ -31,7 +31,6 @@ class PlanApiTest extends ApiTest
             'currency',
             'last_failed_at',
             'created_at',
-            'updated_at'
         ];
 
         $this->baseUri = '/payment/engine/api/v1/plan';
@@ -99,8 +98,11 @@ class PlanApiTest extends ApiTest
      */
     public function test_i_can_filter_plans_by_frequency()
     {
-        for ( $i = 0; $i < 20; $i++ )
-            $this->json('POST', $this->baseUri, $this->createData($this->randomSchedule([ 'frequency' => $this->faker->boolean(80) ? 'monthly' : 'daily' ])))->response;
+        $this->createPlan(['frequency' => 'monthly'], 10);
+        $this->createPlan(['frequency' => 'daily'], 10);
+
+        $plans = Plan::isMonthly()
+                     ->get();
 
         $response = $this->json('POST', $this->baseUri . '/filter', [
             'frequency' => 'monthly',
@@ -110,9 +112,6 @@ class PlanApiTest extends ApiTest
         $content = json_decode($response->content());
 
         $this->checkStructure($content);
-
-        $plans = Plan::isMonthly()
-                     ->get();
 
         $this->assertEquals(sizeof($plans), sizeof($content->data));
 

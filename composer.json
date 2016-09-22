@@ -18,7 +18,7 @@
     "phpspec/phpspec": "~2.1",
     "laracasts/testdummy": "~2.0",
     "laravel/laravel": "dev-develop",
-    "omnipay/tests": "^2.1"
+    "mockery/mockery": "^0.9.5"
   },
   "autoload": {
     "psr-0": {

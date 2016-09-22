@@ -35,7 +35,6 @@ class TransactionApiTest extends ApiTest
             'card_issue_number',
             'currency',
             'created_at',
-            'updated_at'
         ];
 
         $this->baseUri = '/payment/engine/api/v1/transaction';

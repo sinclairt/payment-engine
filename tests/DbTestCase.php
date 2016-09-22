@@ -137,7 +137,7 @@ abstract class DbTestCase extends \Illuminate\Foundation\Testing\TestCase
                 'last_failed_at'    => null,
             ];
 
-            $data = array_replace($data, $this->randomSchedule(), $attributes);
+            $data = array_replace($data, $this->randomSchedule($attributes), $attributes);
 
             $plans->push(app('PlanRepository')
                 ->add($data)
