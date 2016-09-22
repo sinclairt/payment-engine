@@ -11,6 +11,9 @@ use Omnipay\Omnipay;
  */
 class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
 {
+    /**
+     * @var array|mixed
+     */
     private $supportedGateways = [
         "WorldPay",
         "Stripe",
@@ -41,6 +44,14 @@ class Factory implements \Sinclair\PaymentEngine\Contracts\Factory
      * @var array
      */
     protected $options = [];
+
+    /**
+     * Factory constructor.
+     */
+    public function __construct()
+    {
+        $this->supportedGateways = config('payment-engine.supported_gateways', $this->supportedGateways);
+    }
 
     /**
      * @return GatewayInterface
