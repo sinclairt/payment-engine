@@ -20,20 +20,20 @@ class PaymentEngineServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        foreach ( $this->resources as $resource )
-            $this->app[ 'router' ]->bind($resource, function ( $value ) use ( $resource )
-            {
-                return app(studly_case($resource))
-                            ->withTrashed()
-                            ->find($value);
-            });
-
-        $this->app[ 'router' ]->bind('transaction_item', function ( $value )
-        {
-            return app('Item')
-                        ->withTrashed()
-                        ->find($value);
-        });
+//        foreach ( $this->resources as $resource )
+//            $this->app[ 'router' ]->bind($resource, function ( $value ) use ( $resource )
+//            {
+//                return app(studly_case($resource))
+//                            ->withTrashed()
+//                            ->find($value);
+//            });
+//
+//        $this->app[ 'router' ]->bind('transaction_item', function ( $value )
+//        {
+//            return app('Item')
+//                        ->withTrashed()
+//                        ->find($value);
+//        });
 
         $this->publishes([
             __DIR__ . '/../../migrations' => base_path('/database/migrations'),

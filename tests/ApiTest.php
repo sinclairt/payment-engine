@@ -37,6 +37,21 @@ abstract class ApiTest extends DbTestCase
 
         $this->artisan('vendor:publish');
 
+        foreach ( [ 'charge', 'item', 'transaction', 'plan' ] as $resource )
+            $this->app[ 'router' ]->bind($resource, function ( $value ) use ( $resource )
+            {
+                return app(studly_case($resource))
+                            ->withTrashed()
+                            ->find($value);
+            });
+
+        $this->app[ 'router' ]->bind('transaction_item', function ( $value )
+        {
+            return app('Item')
+                        ->withTrashed()
+                        ->find($value);
+        });
+
         $this->app[ 'router' ]->group([ 'middleware' => 'api' ], function ()
         {
             require __DIR__ . '/../vendor/laravel/laravel/routes/payment_engine.php';
