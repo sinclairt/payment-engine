@@ -24,6 +24,7 @@ There is a resourceful controller for each of Plan, Charge, Transaction, and Ite
 #####Events
 
 There are five events that are fired which you can listen for:
+
 * TransactionFailedToGenerate
 
 * TransactionFailedToProcess
