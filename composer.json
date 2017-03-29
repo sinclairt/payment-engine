@@ -1,11 +1,11 @@
 {
-  "name": "sinclair/payment-engine",
+  "name": "sinclairt/payment-engine",
   "description": "API driven tool to process payments and charges",
   "type": "library",
   "require": {
     "php": ">=5.4.0",
-    "sinclair/api-foundation": "^1.0.1",
-    "wtbi/schedulable": "^1.0.0",
+    "sinclairt/api-foundation": "^1.0.1",
+    "sinclairt/schedulable": "^1.0.0",
     "symfony/event-dispatcher": "^2.8",
     "omnipay/worldpay": "^2.2",
     "omnipay/stripe": "^2.4",
@@ -36,12 +36,6 @@
   "scripts": {
     "phpunit": "./vendor/bin/phpunit;"
   },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://satis.ominor.co.uk"
-    }
-  ],
   "config": {
     "preferred-install": "dist"
   },
